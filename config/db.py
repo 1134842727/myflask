@@ -4,7 +4,7 @@ pymysql.install_as_MySQLdb()
 DIALECT = 'mysql'
 USERNAME = 'root'
 PASSWORD = 'root'
-HOST = '127.0.0.1'
+HOST = 'localhost'
 PORT = '3306'
 DATABASE = 'test'
 #mysql 不会认识utf-8,而需要直接写成utf8
