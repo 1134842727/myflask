@@ -11,10 +11,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # 将对应视图引用进来
-from views.test_view import *
-
+from views.role import *
+from views.user import *
 if __name__ == '__main__':
     # 本地调试
     app.run(debug=True,host='127.0.0.1',port=5000)
     # 对外暴露
-    # app.run(debug=True,host='0.0.0.0',port=80)
+    # app.run(debug=True,host='0.0.0.0',port=5000)
