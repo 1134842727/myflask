@@ -9,7 +9,7 @@ from views.base_view import list_model,delete_model,create_model
 @app.route('/user',methods=['GET','POST','DELETE','PATCH'])
 def user():
     if request.method == 'GET':
-        return list_model(User)
+        return list_model(User,request.args.to_dict())
     elif request.method == 'PATCH':
         if request.json.get('name') == None or 'id' not in request.args:
             return 'name或id不能为空'
@@ -36,7 +36,7 @@ def user():
         data = request.json
         return create_model(data,User,db)
     elif request.method == 'DELETE':
-        return delete_model(User,db)
+        return delete_model(User,db,request.args.to_dict())
     else:
         response = make_response({"message": '请求的方法不支持', "code": BAD_REQUES_CODE})
         response.status = BAD_REQUES_CODE

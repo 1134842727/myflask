@@ -5,7 +5,6 @@ from app import app,db
 from models.role import Role
 from utils.data_change import to_json
 from views.base_view import list_model,delete_model
-from utils.auth_decorator import super_admin_pass,admin_pass
 @app.route('/role',methods=['GET','POST','DELETE','PATCH'])
 def role():
     if request.method == 'GET':

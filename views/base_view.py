@@ -1,15 +1,18 @@
-from pip import main
+
 from config.http_code import *
 from flask import request,make_response
 from utils.data_change import to_json
 from utils.get_class_field import get_db_model_class_field
 import pdb
-def list_model(Model):
+
+
+def list_model(Model,params):
     model_list = []
-    if 'id' in request.args:
-        id = request.args['id']
-        model = Model.query.filter_by(id=id)[0]
-        model_list.append(to_json(model))
+    if params:
+        models = Model.query.filter_by(**params)
+        if models.count() > 0:
+            for model in models:
+                model_list.append(to_json(model))
     else:
         models = Model.query.all()
         for model in models:
@@ -19,22 +22,38 @@ def list_model(Model):
     return response
 
 
-def delete_model(Model,db):
-    if 'id' in request.args:
-        id = request.args['id']
-        Model.query.filter_by(id=id).delete()
+def delete_model(Model,db,params):
+    if params:
+        # 保证删除的参数存在，防止异常
+        for i in params:
+            if not hasattr(Model, i):
+                response = make_response({"message": '没有{0}参数！'.format(i), "code": BAD_REQUES_CODE})
+                response.status = BAD_REQUES_CODE
+                return response
+        Model.query.filter_by(**params).delete()
         db.session.commit()
         response = make_response()
         response.status = NO_CONTENT_CODE
         return response
     else:
-        response = make_response({"message": '缺少id！', "code": BAD_REQUES_CODE})
+        response = make_response({"message": '缺少params！', "code": BAD_REQUES_CODE})
         response.status = BAD_REQUES_CODE
         return response
 
 
 def create_model(data,Model,db):
     field_list = get_db_model_class_field(Model)
+
+    # 保证创建的字段存在且数据类型是否正确，防止异常
+    for i in data:
+        if not hasattr(Model, i):
+            response = make_response({"message": '没有{0}参数！'.format(i), "code": BAD_REQUES_CODE})
+            response.status = BAD_REQUES_CODE
+            return response
+        if getattr(Model,i).type.python_type != type(data[i]):
+            response = make_response({"message": '{0}预期为{1}类型，实际为{2}类型！'.format(i,getattr(Model,i).type.python_type,type(data[i])), "code": BAD_REQUES_CODE})
+            response.status = BAD_REQUES_CODE
+            return response
 
     # 获取所有非空字段
     nullable_False_list = []
