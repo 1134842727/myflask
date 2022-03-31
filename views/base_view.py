@@ -41,7 +41,7 @@ def delete_model(Model,db,params):
         return response
 
 
-def create_model(data,Model,db):
+def create_model(Model,data,db):
     field_list = get_db_model_class_field(Model)
 
     # 保证创建的字段存在且数据类型是否正确，防止异常
@@ -88,3 +88,54 @@ def create_model(data,Model,db):
     response.status = SUCCESS_CODE
     return response
 
+def patch_model(Model,data,params,db):
+    field_list = get_db_model_class_field(Model)
+
+    # 保证修改的字段存在且数据类型是否正确，防止异常
+    for i in data:
+        if not hasattr(Model, i):
+            response = make_response({"message": '没有{0}参数！'.format(i), "code": BAD_REQUES_CODE})
+            response.status = BAD_REQUES_CODE
+            return response
+        if getattr(Model,i).type.python_type != type(data[i]):
+            response = make_response({"message": '{0}预期为{1}类型，实际为{2}类型！'.format(i,getattr(Model,i).type.python_type,type(data[i])), "code": BAD_REQUES_CODE})
+            response.status = BAD_REQUES_CODE
+            return response
+
+    # 获取所有唯一字段
+    unique_True_list = []
+    for i in field_list:
+        if hasattr(Model, i) and hasattr(getattr(Model,i),'unique'):
+            if getattr(Model,i).unique == True:
+                unique_True_list.append(i)
+    # 修改字段如果是唯一字段则不能跟原来数据库重复
+    for i in data:
+        if i in unique_True_list and Model.query.filter_by(**{i:data[i]}).count() > 0:
+            response = make_response({"message": '{0}已存在！'.format(i), "code": CONFLICT_CODE})
+            response.status = CONFLICT_CODE
+            return response
+
+    model = Model.query.filter_by(**params)
+    if model.count() > 1:
+        response = make_response({"message": '满足条件的数据不止一条，请确认筛选参数', "code": CONFLICT_CODE})
+        response.status = BAD_REQUES_CODE
+        return response
+    elif model.count() == 1:
+        model = model[0]
+    else:
+        response = make_response({"message": '没有符合条件的数据，请确认筛选参数', "code": NOT_FOUND_CODE})
+        response.status = NOT_FOUND_CODE
+        return response
+    for i in data:
+        setattr(model,i,data[i]) 
+
+    db.session.commit()
+    response = make_response()
+    response.status = NO_CONTENT_CODE
+    return response
+
+
+def method_not_surpport_model():
+    response = make_response({"message": '请求的方法不支持!', "code": BAD_REQUES_CODE})
+    response.status = BAD_REQUES_CODE
+    return response
