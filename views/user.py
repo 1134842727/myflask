@@ -42,6 +42,14 @@ def user():
         return patch_model(User,data,request.args.to_dict(),db)
     elif request.method == 'POST':
         data = request.json
+        if 'role_id' not in data:
+            role = list_model(Role,{'name':'member'})
+            role_id = role.json.get('data')[0].get('id')
+            data['role_id'] = role_id
+        else:
+            role = list_model(Role,{'id':data.get('role_id')})
+            if role.json.get('data') == []:
+                return 'role_id {0} 不存在！'.format(data.get('role_id'))
         return create_model(User,data,db)
     elif request.method == 'DELETE':
         return delete_model(User,db,request.args.to_dict())
