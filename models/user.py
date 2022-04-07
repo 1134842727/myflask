@@ -1,3 +1,4 @@
+from click import password_option
 from app import db
 class User(db.Model):
     __tablename__ = 'user'
@@ -5,6 +6,7 @@ class User(db.Model):
     name = db.Column(db.String(16),nullable=True)
     username = db.Column(db.String(16),unique=True, nullable=False)
     role_id = db.Column(db.Integer,db.ForeignKey('role.id'))
+    password = db.Column(db.String(32),nullable=False)
 
 
 
