@@ -6,7 +6,7 @@ from utils.get_class_field import get_db_model_class_field
 import pdb
 
 
-def list_model(Model,params):
+def list_model(Model,params,hide_key_list=None):
     model_list = []
     if params:
         models = Model.query.filter_by(**params)
@@ -16,6 +16,10 @@ def list_model(Model,params):
     else:
         models = Model.query.all()
         for model in models:
+            data = to_json(model)
+            if hide_key_list:
+                for hide_key in hide_key_list:
+                    del data[hide_key]
             model_list.append(to_json(model))
     response = make_response({"data": model_list, "code": SUCCESS_CODE})
     response.status = SUCCESS_CODE

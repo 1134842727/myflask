@@ -34,14 +34,28 @@ def certification(func):
 
 
 @app.route('/user',methods=['GET','POST','DELETE','PATCH'])
-def user():
+@certification
+def user(role_name):
     if request.method == 'GET':
-        return list_model(User,request.args.to_dict())
+        hide_key_list = []
+        if role_name != 'super_admin':
+            hide_key_list.append('password')
+        return list_model(User,request.args.to_dict(),hide_key_list)
     elif request.method == 'PATCH':
         data = request.json
+        # 只有超管可以自定义role
+        if role_name != 'super_admin':
+            del data['role_id']
+        if 'role_id' in data:
+            role = list_model(Role,{'id':data.get('role_id')})
+            if role.json.get('data') == []:
+                return 'role_id {0} 不存在！'.format(data.get('role_id'))
         return patch_model(User,data,request.args.to_dict(),db)
     elif request.method == 'POST':
         data = request.json
+        # 只有超管可以自定义role
+        if role_name != 'super_admin':
+            del data['role_id']
         if 'role_id' not in data:
             role = list_model(Role,{'name':'member'})
             role_id = role.json.get('data')[0].get('id')
