@@ -24,7 +24,7 @@ def certification(func):
             if user.json.get('data')[0].get('role_id'):          
                 role = list_model(Role,{'id':user.json.get('data')[0].get('role_id')}).json.get('data')[0]
                 role_name = role.get('name')
-                return func(role_name,*args, **kwargs)
+                return func(username,role_name,*args, **kwargs)
             else:
                 return func('member',*args, **kwargs)
         else:
@@ -34,7 +34,7 @@ def certification(func):
 
 @app.route('/user',methods=['GET','POST','DELETE','PATCH'])
 @certification
-def user(role_name):
+def user(username,role_name):
     if request.method == 'GET':
         hide_key_list = []
         if role_name != 'super_admin':
@@ -43,28 +43,28 @@ def user(role_name):
     elif request.method == 'PATCH':
         data = request.json
         # 只有超管可以自定义role
-        if role_name != 'super_admin':
+        if role_name != 'super_admin' and 'role_id' in data:
             del data['role_id']
         if 'role_id' in data:
             role = list_model(Role,{'id':data.get('role_id')})
             if role.json.get('data') == []:
                 return 'role_id {0} 不存在！'.format(data.get('role_id'))
-        return patch_model(User,data,request.args.to_dict(),db)
-    elif request.method == 'POST':
-        data = request.json
-        # 只有超管可以自定义role
         if role_name != 'super_admin':
-            del data['role_id']
-        if 'role_id' not in data:
-            role = list_model(Role,{'name':'member'})
-            role_id = role.json.get('data')[0].get('id')
-            data['role_id'] = role_id
-        else:
-            role = list_model(Role,{'id':data.get('role_id')})
-            if role.json.get('data') == []:
-                return 'role_id {0} 不存在！'.format(data.get('role_id'))
-        return create_model(User,data,db)
+            user = list_model(User,request.args.to_dict())
+            if user.json.get('data'):
+                if len(user.json.get('data')) != 1:
+                    return '符合条件的数据非一条，请检查筛选条件！'
+                if user.json.get('data')[0].get('username') != username:
+                    return '非超管只能修改自己！'
+        return patch_model(User,data,request.args.to_dict(),db)
     elif request.method == 'DELETE':
+        if role_name != 'super_admin':
+            user = list_model(User,request.args.to_dict())
+            if user.json.get('data'):
+                if len(user.json.get('data')) != 1:
+                    return '符合条件的数据非一条，请检查筛选条件！'
+                if user.json.get('data')[0].get('username') != username:
+                    return '非超管只能删除自己！'
         return delete_model(User,db,request.args.to_dict())
     else:
         return method_not_surpport_model()
@@ -81,3 +81,17 @@ def login():
     else:
         return "用户或密码错误"
 
+@app.route('/regist',methods=['POST'])
+def regist():
+    data = request.json
+    if 'role_id' in data:
+        del data['role_id']
+    if 'role_id' not in data:
+        role = list_model(Role,{'name':'member'})
+        role_id = role.json.get('data')[0].get('id')
+        data['role_id'] = role_id
+    else:
+        role = list_model(Role,{'id':data.get('role_id')})
+        if role.json.get('data') == []:
+            return 'role_id {0} 不存在！'.format(data.get('role_id'))
+    return create_model(User,data,db)

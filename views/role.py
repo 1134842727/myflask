@@ -9,7 +9,7 @@ from views.base_view import list_model,delete_model,create_model,method_not_surp
 from views.user import certification
 @app.route('/role',methods=['GET','POST','DELETE','PATCH'])
 @certification
-def role(role_name):
+def role(username,role_name):
     if request.method == 'GET':
         return list_model(Role,request.args.to_dict())
     elif request.method == 'PATCH':
