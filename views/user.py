@@ -1,13 +1,15 @@
 import pdb
 import time
-import sqlalchemy
 from flask import request
 from config.http_code import *
 from app import app,db
 from models.user import User
 from models.role import Role
+from models.img import Img
 from views.base_view import list_model,delete_model,create_model,patch_model,method_not_surpport_model
 from utils.pyjwt import assert_jwt, set_jwt
+from utils.file_manager import file_upload
+#部署前记得修改自己的盐
 salt ='linkai4836'
 
 from functools import wraps
@@ -83,7 +85,7 @@ def login():
 
 @app.route('/regist',methods=['POST'])
 def regist():
-    data = request.json
+    data = request.form.to_dict()
     if 'role_id' in data:
         del data['role_id']
     if 'role_id' not in data:
@@ -94,4 +96,13 @@ def regist():
         role = list_model(Role,{'id':data.get('role_id')})
         if role.json.get('data') == []:
             return 'role_id {0} 不存在！'.format(data.get('role_id'))
+    # 用户注册是否传了头像
+    files = request.files.getlist('img')    
+    if files:
+        file = files[0]
+        file_url = file_upload(file)
+        img = Img(url=file_url,description='user-img-' + data['username'])
+        db.session.add(img)
+        db.session.commit()
+        data['img'] = img.id
     return create_model(User,data,db)

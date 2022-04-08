@@ -6,6 +6,7 @@ class User(db.Model):
     username = db.Column(db.String(16),unique=True, nullable=False)
     role_id = db.Column(db.Integer,db.ForeignKey('role.id'),nullable=False)
     password = db.Column(db.String(32),nullable=False)
+    img = db.Column(db.Integer,db.ForeignKey('img.id'),nullable=True)
 
 
 

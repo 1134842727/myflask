@@ -1,9 +1,8 @@
-import sqlalchemy
-from flask import request,make_response
+
+from flask import request
 from config.http_code import *
 from app import app,db
 from models.role import Role
-from utils.data_change import to_json
 from views.base_view import list_model,delete_model,create_model,method_not_surpport_model,patch_model
 
 from views.user import certification

@@ -127,9 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-<<<<<<< HEAD
-=======
 
 
 .idea/
->>>>>>> 23efdf0bffaa089272f087e479c598609a290a78
+
+# media
+media/

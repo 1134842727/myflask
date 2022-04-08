@@ -5,7 +5,6 @@ from utils.data_change import to_json
 from utils.get_class_field import get_db_model_class_field
 import pdb
 
-
 def list_model(Model,params,hide_key_list=None):
     model_list = []
     if params:
@@ -27,20 +26,28 @@ def list_model(Model,params,hide_key_list=None):
 
 
 def delete_model(Model,db,params):
-    if params:
-        # 保证删除的参数存在，防止异常
-        for i in params:
-            if not hasattr(Model, i):
-                response = make_response({"message": '没有{0}参数！'.format(i), "code": BAD_REQUES_CODE})
-                response.status = BAD_REQUES_CODE
-                return response
-        Model.query.filter_by(**params).delete()
-        db.session.commit()
-        response = make_response()
-        response.status = NO_CONTENT_CODE
-        return response
-    else:
-        response = make_response({"message": '缺少params！', "code": BAD_REQUES_CODE})
+    try:
+        if params:
+            # 保证删除的参数存在，防止异常
+            for i in params:
+                if not hasattr(Model, i):
+                    response = make_response({"message": '没有{0}参数！'.format(i), "code": BAD_REQUES_CODE})
+                    response.status = BAD_REQUES_CODE
+                    return response
+            Model.query.filter_by(**params).delete()
+            db.session.commit()
+            response = make_response()
+            response.status = NO_CONTENT_CODE
+            return response
+        else:
+            response = make_response({"message": '缺少params！', "code": BAD_REQUES_CODE})
+            response.status = BAD_REQUES_CODE
+            return response
+    except Exception as e:
+        if 'Cannot delete or update a parent row: a foreign key constraint fails' in e.args[0]:
+            e = e.args[0].split('test`.`')[1].split('`,')[0]
+            e = "数据被{0}表引用".format(e)
+        response = make_response({"message": '删除失败！{0}'.format(e), "code": BAD_REQUES_CODE})
         response.status = BAD_REQUES_CODE
         return response
 
