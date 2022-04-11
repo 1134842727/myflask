@@ -154,3 +154,9 @@ def method_not_surpport_model():
 def list_model_simple(Model,params,hide_key_list=None):
     models = Model.query.filter_by(**params)
     return models
+
+def create_model_simple(Model,data,db):
+    model = Model(**data)
+    db.session.add(model)
+    db.session.commit()
+    return model

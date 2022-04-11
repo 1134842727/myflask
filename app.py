@@ -16,7 +16,8 @@ db = SQLAlchemy(app)
 from views.role import *
 from views.user import *
 from views.img import *
-
+from views.house import *
+from views.house_link_img import *
 #没有视图的模型需要单独引入，因为需要相关db处理代码
 # 如：from models.img import Img
 if __name__ == '__main__':

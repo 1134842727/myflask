@@ -36,7 +36,7 @@ def certification(func):
     return main_func
 
 
-@app.route('/user',methods=['GET','POST','DELETE','PATCH'])
+@app.route('/user',methods=['GET','DELETE','PATCH'])
 @certification
 def user(username,role_name):
     if request.method == 'GET':
