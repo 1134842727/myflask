@@ -150,3 +150,7 @@ def method_not_surpport_model():
     response = make_response({"message": '请求的方法不支持!', "code": BAD_REQUES_CODE})
     response.status = BAD_REQUES_CODE
     return response
+
+def list_model_simple(Model,params,hide_key_list=None):
+    models = Model.query.filter_by(**params)
+    return models
